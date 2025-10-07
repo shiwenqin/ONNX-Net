@@ -1,5 +1,11 @@
 # ONNX-Net: Towards Universal Representations and Instant Performance Prediction for Neural Architectures
 
+This is the official codebase for our paper:
+
+[ONNX-Net: Towards Universal Representations and Instant Performance Prediction for Neural Architectures](https://arxiv.org/abs/2510.04938)
+
+Check out our [project page](https://shiwenqin.github.io/onnxnet/) and [dataset](https://huggingface.co/datasets/carlosqsw/ONNX-Bench) too!
+
 ## Environment Setup
 
 ```bash
