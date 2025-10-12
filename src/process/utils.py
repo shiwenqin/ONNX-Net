@@ -7,11 +7,8 @@ import onnx
 import pandas as pd
 import numpy as np
 import numpy.typing as npt
-import networkx as nx
 import matplotlib.pyplot as plt
 from transformers import PreTrainedTokenizer
-
-from onnx_graph_utils import onnx_to_graph, encode_graph
 
 def list_onnx_files(folder_path):
     """
@@ -1457,7 +1454,6 @@ class ONNXConverter:
 
         return curr_str
 
-
     def get_onnx_infos_chain_nooutshape(self, unify_class=False, simp_op=False) -> str:
         '''
         Chain consecutive nodes with single input and single output together
@@ -1740,10 +1736,6 @@ class ONNXConverter:
             curr_str += '\n'
         return curr_str
 
-    def get_onnx_infos_graph_opt(self) -> str:
-        graph = onnx_to_graph(self.onnx_model)
-        return encode_graph(graph)
-
     def get_onnx_str(self, mode: str = "full", **args) -> tuple[str, float, int]:
         mode_map = {
             "full": self.get_onnx_infos,
@@ -1754,7 +1746,6 @@ class ONNXConverter:
             "chain": self.get_onnx_infos_chain,
             "template": self.get_onnx_infos_template_compressed,
             "template_slim": self.get_onnx_infos_template_compressed_slim,
-            "graph_opt": self.get_onnx_infos_graph_opt,
             "chain_nooutshape": self.get_onnx_infos_chain_nooutshape,
             "chain_slim": self.get_onnx_infos_chain_slim,
             "minimum": self.get_onnx_infos_minimum,
