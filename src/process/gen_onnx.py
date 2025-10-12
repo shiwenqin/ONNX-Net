@@ -12,7 +12,6 @@ from sklearn.model_selection import train_test_split
 from utils import ONNXConverter, list_onnx_files
 
 SS = ['nasbench201']
-#datasets = ['addnist', 'chesseract', 'cifartile', 'geoclassing', 'gutenberg', 'isabella', 'language', 'multnist']
 
 path = '../eintool/onnx'
 encoding_path = '../eintool/encodings'
@@ -43,7 +42,7 @@ for ss in SS:
         onnx_name = onnx_file.split('/')[-1]
         converter = ONNXConverter(onnx_path, tokenizer)
         try:
-            model_str, acc, token_count = converter.get_onnx_str(mode = 'chain_slim_input')
+            model_str, acc, token_count = converter.get_onnx_str(mode = 'chain_slim')
         except Exception as e:
             print(f"Error processing {onnx_file}: {e}")
             #continue
