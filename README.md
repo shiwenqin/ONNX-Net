@@ -5,13 +5,17 @@
 [![Website](https://img.shields.io/badge/🌐-Project%20Page-grey)](https://shiwenqin.github.io/onnxnet/)
 [![arXiv](https://img.shields.io/badge/arXiv-2510.04938-b31b1b)](https://arxiv.org/abs/2510.04938)
 
-## Highlights
+## ✨ Highlights
 
-## Architecture
+- 🤗 **ONNX-Bench**: 649,596 trained models across diverse NAS spaces in a unified ONNX format with CIFAR-10 accuracy labels (1–3503 nodes; accuracy range [0.0, 97.03]).
+- 🧠 **Universal encoding**: Our encoding supports all ONNX architectures.
+- 🚀 **Instant prediction**: LLM-based surrogate enables fast performance prediction, suitable for speeding up NAS pipelines.
+
+## 🏗️ Architecture
 
 ![ONNX-Net architecture](images/overview_big_picture.png "ONNX-Net Architecture")
 
-## Environment Setup
+## ⚙️ Environment Setup
 
 ```bash
 git clone https://github.com/shiwenqin/ONNX-Net.git
@@ -19,7 +23,7 @@ cd ONNX-Net
 pip install -r requirements.txt
 ```
 
-## Important Folders
+## 📁 Important Folders
 
 ```
 .
@@ -34,13 +38,13 @@ pip install -r requirements.txt
 └── README.md          
 ```
 
-## Encoding Generation
+## 🧩 Encoding Generation
 
 Multiple variations of ONNX text encoding is implemented in `src/process/utils.py`. `chain_slim` is used for most experiments, and `chain_slim_base`, `chain_slim_param`, `chain_slim_outshape` and `chain_slim_input` are used in ablation study.
 
 Example script for encoding generation is given in `src/process/gen_onnx.py`. If using your own ONNX files, it is highly recommended to first process the files using [ONNX Simplifier](https://github.com/daquexian/onnx-simplifier). Files in [ONNX-Bench](https://huggingface.co/datasets/carlosqsw/ONNX-Bench) are all processed so no further simplification is required.
 
-## Surrogate Training
+## 🏃‍♀️ Surrogate Training
 
 Scripts to reproduce results in paper are given in `scripts/`.
 
@@ -60,7 +64,7 @@ accelerate launch --num_processes 4 src/bert_tuning.py \
         --eval_strategy epoch
 ```
 
-## Citation
+## 📚 Citation
 
 If you use this work, please cite us:
 
