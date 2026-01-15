@@ -1,16 +1,28 @@
+from typing import Any, Literal, cast, override
+
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-#import torchsort
-from transformers import Trainer
+from torch import Tensor, nn
+import torch.nn.functional as F  # noqa: N812
+
+# import torchsort
+from transformers.trainer import Trainer
+
 
 class HuberTrainer(Trainer):
-    " Use Huber loss for regression tasks. "
-    def __init__(self, *args, delta=5, **kwargs):
+    """Use Huber loss for regression tasks."""
+
+    def __init__(self, *args: Any, delta: float = 5, **kwargs: Any) -> None:  # noqa: ANN401
         super().__init__(*args, **kwargs)
         self.loss = nn.HuberLoss(delta=delta)
 
-    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
+    @override
+    def compute_loss(
+        self,
+        model: nn.Module,
+        inputs: dict[str, Tensor | Any],
+        return_outputs: bool = False,
+        num_items_in_batch: Tensor | None = None,
+    ) -> tuple[Tensor, Tensor] | Tensor:
 
         labels = inputs.pop("labels")
         outputs = model(**inputs)
@@ -25,15 +37,24 @@ class HuberTrainer(Trainer):
         loss = self.loss(logits, labels)
 
         return (loss, outputs) if return_outputs else loss
-    
+
+
 class MSECapTrainer(Trainer):
-    " Use MSE loss with a cap for regression tasks. "
-    def __init__(self, *args, cap=1.0, **kwargs):
+    """Use MSE loss with a cap for regression tasks."""
+
+    def __init__(self, *args: Any, cap: float = 1.0, **kwargs: Any) -> None:  # noqa: ANN401
         super().__init__(*args, **kwargs)
         self.cap = cap
         self.loss = nn.MSELoss()
 
-    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
+    @override
+    def compute_loss(
+        self,
+        model: nn.Module,
+        inputs: dict[str, Tensor | Any],
+        return_outputs: bool = False,
+        num_items_in_batch: Tensor | None = None,
+    ) -> tuple[Tensor, Tensor] | Tensor:
 
         labels = inputs.pop("labels")
         outputs = model(**inputs)
@@ -49,24 +70,40 @@ class MSECapTrainer(Trainer):
         loss = torch.clamp(loss, max=self.cap)
 
         return (loss, outputs) if return_outputs else loss
-    
+
+
 class PWRTrainer(Trainer):
-    " Use Pairwise Ranking loss for regression tasks. "
-    def __init__(self, *args, compare_threshold=0.0, max_compare_ratio=4, margin=0.1, **kwargs):
+    """Use Pairwise Ranking loss for regression tasks."""
+
+    def __init__(
+        self,
+        *args: Any,  # noqa: ANN401
+        compare_threshold: float = 0.0,
+        max_compare_ratio: int = 4,
+        margin: float = 0.1,
+        **kwargs: Any,  # noqa: ANN401
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.compare_threshold = compare_threshold
         self.max_compare_ratio = max_compare_ratio
         self.margin = margin
         self.loss = nn.MarginRankingLoss(margin=margin)
 
-    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
+    @override
+    def compute_loss(  # noqa: PLR0914
+        self,
+        model: nn.Module,
+        inputs: dict[str, Tensor | Any],
+        return_outputs: bool = False,
+        num_items_in_batch: Tensor | None = None,
+    ) -> tuple[Tensor, Tensor] | Tensor:
         labels = inputs.pop("labels")
         outputs = model(**inputs)
 
         logits = outputs.logits.squeeze(-1)
 
         t = labels.to(logits.device, dtype=logits.dtype)
-        B = t.size(0)
+        B = t.size(0)  # noqa: N806
 
         diff = t[:, None] - t[None, :]
         mask = torch.triu(diff.abs() > self.compare_threshold, diagonal=1)
@@ -74,9 +111,9 @@ class PWRTrainer(Trainer):
         m = i.numel()
 
         if m == 0:
-            loss = (logits * 0).sum() 
+            loss = (logits * 0).sum()
             return (loss, outputs) if return_outputs else loss
-        
+
         n_max_pairs = min(m, self.max_compare_ratio * B)
         if m > n_max_pairs:
             perm = torch.randperm(m, device=logits.device)[:n_max_pairs]
@@ -89,10 +126,17 @@ class PWRTrainer(Trainer):
         loss = self.loss(s_i, s_j, y)
 
         return (loss, outputs) if return_outputs else loss
-    
-class PairwiseLogTrainer(Trainer):
 
-    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
+
+class PairwiseLogTrainer(Trainer):
+    @override
+    def compute_loss(
+        self,
+        model: nn.Module,
+        inputs: dict[str, Tensor | Any],
+        return_outputs: bool = False,
+        num_items_in_batch: Tensor | None = None,
+    ) -> tuple[Tensor, Tensor] | Tensor:
         labels = inputs.pop("labels")
         outputs = model(**inputs)
 
@@ -109,14 +153,21 @@ class PairwiseLogTrainer(Trainer):
             loss = (logits * 0).sum()
 
         return (loss, outputs) if return_outputs else loss
-    
-class SoftmaxListwiseTrainer(Trainer):
 
-    def __init__(self, *args, tau: float = 0.25, **kwargs):
+
+class SoftmaxListwiseTrainer(Trainer):
+    def __init__(self, *args: Any, tau: float = 0.25, **kwargs: Any) -> None:  # noqa: ANN401
         super().__init__(*args, **kwargs)
         self.tau = float(tau)
 
-    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
+    @override
+    def compute_loss(
+        self,
+        model: nn.Module,
+        inputs: dict[str, Tensor | Any],
+        return_outputs: bool = False,
+        num_items_in_batch: Tensor | None = None,
+    ) -> tuple[Tensor, Tensor] | Tensor:
         labels = inputs.pop("labels")
         outputs = model(**inputs)
 
@@ -131,15 +182,22 @@ class SoftmaxListwiseTrainer(Trainer):
         # loss = ce / norm
 
         return (loss, outputs) if return_outputs else loss
-    
-class Poly1ListwiseTrainer(Trainer):
 
-    def __init__(self, *args, epsilon: float = 1.0, tau: float = 1.0, **kwargs):
+
+class Poly1ListwiseTrainer(Trainer):
+    def __init__(self, *args: Any, epsilon: float = 1.0, tau: float = 1.0, **kwargs: Any) -> None:  # noqa: ANN401
         super().__init__(*args, **kwargs)
         self.epsilon = float(epsilon)
         self.tau = float(tau)
 
-    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
+    @override
+    def compute_loss(
+        self,
+        model: nn.Module,
+        inputs: dict[str, Tensor | Any],
+        return_outputs: bool = False,
+        num_items_in_batch: Tensor | None = None,
+    ) -> tuple[Tensor, Tensor] | Tensor:
         labels = inputs.pop("labels")
         outputs = model(**inputs)
 
@@ -152,19 +210,26 @@ class Poly1ListwiseTrainer(Trainer):
         p = torch.exp(log_p)
         ce = -(y_prob * log_p).sum()
         poly = (y_prob * (1 - p)).sum()
-        #norm = labels.sum().clamp_min(1e-8)
-        #loss = (ce + self.epsilon * poly) / norm
+        # norm = labels.sum().clamp_min(1e-8)
+        # loss = (ce + self.epsilon * poly) / norm
         loss = ce + self.epsilon * poly
 
         return (loss, outputs) if return_outputs else loss
-    
+
+
 # class SpearmanTrainer(Trainer):
 #     " Use Spearman correlation as loss for regression tasks. "
-#     def __init__(self, *args, tau=1.0, **kwargs):
+#     def __init__(self, *args: Any, tau=1.0, **kwargs: Any) -> None:
 #         super().__init__(*args, **kwargs)
 #         self.tau = tau
 
-#     def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
+#    @override
+#    def compute_loss(
+#        self, model: nn.Module,
+#        inputs: dict[str, Tensor | Any],
+#        return_outputs: bool = False,
+#        num_items_in_batch: Tensor | None = None
+#    ) -> tuple[Tensor, Tensor] | Tensor:
 #         labels = inputs.pop("labels")
 #         outputs = model(**inputs)
 
@@ -183,35 +248,47 @@ class Poly1ListwiseTrainer(Trainer):
 
 #         return (loss, outputs) if return_outputs else loss
 
+
 class PWRMiningTrainer(Trainer):
-    " Use Pairwise Ranking loss with hard mining for regression tasks. "
-    def __init__(self, *args, 
-                 compare_threshold=0.0, 
-                 max_compare_ratio=4, 
-                 margin=0.1, 
-                 weight_mode='exp', 
-                 max_pair_weight=None,
-                 mining_mode='topk',
-                 **kwargs):
+    """Use Pairwise Ranking loss with hard mining for regression tasks."""
+
+    def __init__(  # noqa: PLR0913
+        self,
+        *args: Any,  # noqa: ANN401
+        compare_threshold: float = 0.0,
+        max_compare_ratio: int = 4,
+        margin: float = 0.1,
+        weight_mode: Literal["exp", "inverse", "none"] = "exp",
+        max_pair_weight: float | None = None,
+        mining_mode: Literal["topk", "random", "none"] = "topk",
+        **kwargs: Any,  # noqa: ANN401
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.compare_threshold = compare_threshold
         self.max_compare_ratio = max_compare_ratio
         self.margin = margin
-        self.loss = nn.MarginRankingLoss(margin=margin, reduction='none')
+        self.loss = nn.MarginRankingLoss(margin=margin, reduction="none")
         self.weight_mode = weight_mode
         self.tau = 0.5
         self.eps = 1e-8
         self.max_pair_weight = max_pair_weight
         self.mining_mode = mining_mode
 
-    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
+    @override
+    def compute_loss(  # noqa: PLR0914
+        self,
+        model: nn.Module,
+        inputs: dict[str, Tensor | Any],
+        return_outputs: bool = False,
+        num_items_in_batch: Tensor | None = None,
+    ) -> tuple[Tensor, Tensor] | Tensor:
         labels = inputs.pop("labels")
         outputs = model(**inputs)
 
         logits = outputs.logits.squeeze(-1)
 
         t = labels.to(logits.device, dtype=logits.dtype)
-        B = t.size(0)
+        B = cast("int", t.size(0))  # noqa: N806
 
         diff = t[:, None] - t[None, :]
         mask = torch.triu(diff.abs() > self.compare_threshold, diagonal=1)
@@ -219,9 +296,9 @@ class PWRMiningTrainer(Trainer):
         m = i.numel()
 
         if m == 0:
-            loss = (logits * 0).sum() 
+            loss = (logits * 0).sum()
             return (loss, outputs) if return_outputs else loss
-        
+
         n_max_pairs = min(m, self.max_compare_ratio * B)
 
         s_i, s_j = logits[i], logits[j]
@@ -231,9 +308,9 @@ class PWRMiningTrainer(Trainer):
         loss = self.loss(s_i, s_j, y)
         gaps = diff.abs()[i, j]
 
-        if self.weight_mode == 'exp':
+        if self.weight_mode == "exp":
             w = torch.exp(-gaps / max(self.tau, self.eps))
-        elif self.weight_mode == 'inverse':
+        elif self.weight_mode == "inverse":
             w = 1.0 / (gaps + self.eps)
         else:
             w = torch.ones_like(gaps)
@@ -241,31 +318,36 @@ class PWRMiningTrainer(Trainer):
         if self.max_pair_weight is not None:
             w = torch.clamp(w, max=self.max_pair_weight)
 
-        if m > n_max_pairs or self.mining_mode != 'none':
-
+        if m > n_max_pairs or self.mining_mode != "none":
             target_k = n_max_pairs
-            if self.mining_mode == 'topk':
-                k =  min(target_k, m)
+            if self.mining_mode == "topk":
+                k = min(target_k, m)
                 if k < m:
                     idx = torch.topk(loss, k=k, largest=True).indices
                     loss = loss[idx]
                     w = w[idx]
-            else:
-                if m > target_k:
-                    perm = torch.randperm(m, device=logits.device)[:target_k]
-                    loss = loss[perm]
-                    w = w[perm]
+            elif m > target_k:
+                perm = torch.randperm(m, device=logits.device)[:target_k]
+                loss = loss[perm]
+                w = w[perm]
 
         loss = (loss * w).sum() / (w.sum() + self.eps)
 
         return (loss, outputs) if return_outputs else loss
 
+
 # class PlackettTrainer(Trainer):
 #     " Use Plackett-Luce loss for regression tasks. "
-#     def __init__(self, *args, **kwargs):
+#     def __init__(self, *args: Any, **kwargs: Any) -> None:
 #         super().__init__(*args, **kwargs)
 
-#     def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
+#    @override
+#    def compute_loss(
+#        self, model: nn.Module,
+#        inputs: dict[str, Tensor | Any],
+#        return_outputs: bool = False,
+#        num_items_in_batch: Tensor | None = None
+#    ) -> tuple[Tensor, Tensor] | Tensor:
 #         labels = inputs.pop("labels")
 #         outputs = model(**inputs)
 
@@ -284,17 +366,23 @@ class PWRMiningTrainer(Trainer):
 #         loss = loss / len(y_true)
 
 #         return (loss, outputs) if return_outputs else loss
-    
+
 # class ApproxRankTrainer(Trainer):
 #     " Use Approximate Ranking loss for regression tasks. "
-#     def __init__(self, *args, alpha=10.0, **kwargs):
+#     def __init__(self, *args: Any, alpha=10.0, **kwargs: Any) -> None:
 #         super().__init__(*args, **kwargs)
 #         self.alpha = alpha
 
-#     def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
+#    @override
+#    def compute_loss(
+#        self, model: nn.Module,
+#        inputs: dict[str, Tensor | Any],
+#        return_outputs: bool = False,
+#        num_items_in_batch: int | None = None
+#    ) -> tuple[Tensor, Tensor] | Tensor:
 #         labels = inputs.pop("labels")
 #         outputs = model(**inputs)
-        
+
 #         logits = outputs.logits.squeeze(-1)
 
 #         y_pred = logits.unsqueeze(0)

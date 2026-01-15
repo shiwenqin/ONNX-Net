@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools >= 80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "onnxnet"
+version = "1.0.0"
+authors = [
+    { name = "Shiwen Qin" },
+    { name = "Alexander Auras", email = "33501357+AlexanderAuras@users.noreply.github.com" },
+]
+description = "Neural architecture search (NAS) automates the design process of high-performing architectures, but remains bottlenecked by expensive performance evaluation. Most existing studies that achieve faster evaluation are mostly tied to cell-based search spaces and graph encodings tailored to those individual search spaces, limiting their flexibility and scalability when applied to more expressive search spaces. In this work, we aim to close the gap of individual search space restrictions and search space dependent network representations. We present ONNX-Bench, a benchmark consisting of a collection of neural networks in a unified format based on ONNX files. ONNX-Bench includes all open-source NAS-bench-based neural networks, resulting in a total size of more than 600k {architecture, accuracy} pairs. This benchmark allows creating a shared neural network representation, ONNX-Net, able to represent any neural architecture using natural language descriptions acting as an input to a performance predictor. This text-based encoding can accommodate arbitrary layer types, operation parameters, and heterogeneous topologies, enabling a single surrogate to generalise across all neural architectures rather than being confined to cell-based search spaces. Experiments show strong zero-shot performance across disparate search spaces using only a small amount of pretraining samples, enabling the unprecedented ability to evaluate any neural network architecture instantly."
+keywords = [
+    "Neural Architecture Search",
+    "ONNX",
+    "Machine Learning",
+    "Language Model",
+]
+readme = "README.md"
+requires-python = ">=3.13"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Environment :: GPU :: NVIDIA CUDA :: 12 :: 12.6",
+    "Intended Audience :: Science/Research",
+    "Natural Language :: English",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "accelerate~=1.10",
+    "bitsandbytes~=0.47",
+    "datasets~=4.1",
+    "deepspeed~=0.17",
+    "matplotlib~=3.10",
+    "numpy~=2.1",
+    "onnx~=1.20",
+    "pandas~=2.3",
+    "peft~=0.17",
+    "scikit-learn~=1.7",
+    "scipy~=1.15",
+    "seaborn~=0.13",
+    "tokenizers~=0.21",
+    "torch~=2.6",
+    "transformers~=4.51",
+    "wandb~=0.21",
+]
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu126" }]
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[project.urls]
+homepage = "https://shiwenqin.github.io/onnxnet/"
+repository = "https://github.com/shiwenqin/ONNX-Net"
+paper = "https://arxiv.org/pdf/2510.04938"
+
+#[project.scripts]
+#onnxnet = "onnxnet.__main__:main"
+
+[dependency-groups]
+dev = [
+    "debugpy>=1.8.19",
+    "pyright>=1.1.407",
+    "ruff>=0.14.10",
+    "setuptools>=80.9.0",
+]

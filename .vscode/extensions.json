@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "charliermarsh.ruff",
+        "GitHub.copilot",
+        "Gruntfuggly.todo-tree",
+        "mhutchie.git-graph",
+        "ms-python.python",
+        "ms-python.debugpy",
+        "ms-python.pylance",
+    ]
+}

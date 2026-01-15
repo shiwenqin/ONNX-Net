@@ -1,0 +1,56 @@
+{
+    "workbench.colorCustomizations": {
+        "editorInfo.foreground": "#3589ea44"
+    },
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "always",
+        "source.organizeImports": "always",
+    },
+    "files.exclude": {
+        "**/__pycache__": true,
+        ".ruff_cache": true,
+        ".venv": true,
+        ".ipynb_checkpoints": true,
+        "wandb": true,
+        "**/*.egg-info": true,
+        "build": true,
+    },
+    "terminal.integrated.scrollback": 10000,
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "todo-tree.general.tags": [
+        "TODO",
+        "BUG",
+        "HACK",
+        "FIX",
+    ],
+    "python.languageServer": "Pylance",
+    "python.analysis.diagnosticMode": "workspace",
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.importFormat": "absolute",
+    "python.analysis.inlayHints.functionReturnTypes": true,
+    "python.analysis.inlayHints.pytestParameters": true,
+    "python.analysis.fixAll": [
+        "source.convertImportFormat",
+    ],
+    "editor.formatOnSave": true,
+    "editor.accessibilitySupport": "off",
+    "github.copilot.enable": {
+        "*": true,
+    },
+    "notebook.editorOptionsCustomizations": {
+        "editor.tabSize": 4,
+        "editor.indentSize": 4,
+        "editor.insertSpaces": true
+    },
+    "accessibility.underlineLinks": true,
+    "python.analysis.supportRestructuredText": true,
+    "files.autoSave": "onFocusChange",
+    "debug.showVariableTypes": true,
+    "python-envs.pythonProjects": [],
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+}

@@ -1,0 +1,57 @@
+include = ["src/**/*.py"]
+exclude = ["**/__pycache__/**", ".venv/**"]
+fix = true
+line-length = 120
+preview = true
+
+[format]
+preview = true
+docstring-code-format = true
+
+[lint]
+preview = true
+select = ["ALL"]
+ignore = [
+    "E731",
+    "F821",
+    "RET504",
+    "D",
+    "CPY",
+    "T201",
+    "ERA001",
+    "SIM108",
+    "PLC1901",
+]
+dummy-variable-rgx = "^_+$"
+task-tags = ["TODO", "BUG", "HACK"]
+
+[lint.extend-per-file-ignores]
+"tests/**/*.py" = ["INP001", "D100", "D103", "S101"]
+
+[lint.flake8-errmsg]
+max-string-length = 80
+
+[lint.flake8-implicit-str-concat]
+allow-multiline = false
+
+[lint.flake8-import-conventions.aliases]
+"matplotlib" = "mpl"
+"matplotlib.pyplot" = "plt"
+"numpy" = "np"
+"numpy.typing" = "npt"
+"pandas" = "pd"
+"torch.nn" = "nn"
+"torch.nn.functional" = "F"
+"scipy" = "sp"
+"PIL.Image" = "Image"
+
+[lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[lint.isort]
+combine-as-imports = true
+force-sort-within-sections = true
+lines-after-imports = 2
+
+[lint.pydocstyle]
+convention = "google"

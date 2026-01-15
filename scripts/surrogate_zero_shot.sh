@@ -1,13 +1,13 @@
-seed=42
-
-accelerate launch --num_processes 4 ../src/bert_tuning.py \
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+SEED=42
+accelerate launch --num_processes 4 $SCRIPT_DIR/../src/onnxnet/bert_tuning.py \
         --model_name Qwen/Qwen3-1.7B \
-        --data_path ../chain_slim_v1/nb101/nb101_50000_$seed.csv \
-        --eval_path ../chain_slim_v1/nasbench201.csv \
-        --output_path ../res/ \
+        --data_path $SCRIPT_DIR/../data/chain_slim_v1/nb101/nb101_50000_$SEED.csv \
+        --eval_path $SCRIPT_DIR/../data/chain_slim_v1/nasbench201.csv \
+        --output_path $SCRIPT_DIR/../res/ \
         --batch_size 16 \
         --epochs 5 \
-        --seed $seed \
+        --seed $SEED \
         --lr 5e-5 \
         --loss_fn pwr \
         --weight_decay 0.1 \
