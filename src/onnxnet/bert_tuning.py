@@ -74,9 +74,6 @@ parser.add_argument(
         "huber",
         "mse_cap",
         "pwr",
-        "spearman",
-        "plackett",
-        "approxrank",
         "pwr_mining",
         "pairlog",
         "softmaxlist",
@@ -86,7 +83,7 @@ parser.add_argument(
 parser.add_argument("--eval_strategy", type=str, default="epoch", choices=["steps", "epoch"])
 parser.add_argument("--flash_attention", type=bool, default=False)
 parser.add_argument("--gradient_checkpointing", type=bool, default=False)
-
+parser.add_argument("--logging_steps", type=int, default=10)
 
 # Output params
 parser.add_argument("--output_path", type=Path, default=None)
@@ -123,8 +120,6 @@ else:
 
 if args.train_size is not None and args.train_size < len(train_df):
     train_df = train_df.sample(n=args.train_size, random_state=args.seed)
-# stratify sample 10% training data
-# train_df = train_df.sample(frac=0.1, random_state=42)
 if args.eval_path is not None:
     val_df = pd.read_csv(args.eval_path)
 else:
@@ -198,7 +193,7 @@ training_args = TrainingArguments(
     num_train_epochs=args.epochs,
     weight_decay=args.weight_decay,
     warmup_ratio=args.warmup_ratio,
-    logging_steps=200,
+    logging_steps=args.logging_steps,
     lr_scheduler_type="polynomial",
     lr_scheduler_kwargs={"lr_end": args.lr * 0.1},
     gradient_accumulation_steps=1,
@@ -230,8 +225,6 @@ elif args.loss_fn == "mse_cap":
     trainer = MSECapTrainer(**universal_trainer_params, cap=10)
 elif args.loss_fn == "pwr":
     trainer = PWRTrainer(**universal_trainer_params, compare_threshold=0.0, max_compare_ratio=4, margin=0.1)
-# elif args.loss_fn == 'spearman':
-#     trainer = SpearmanTrainer(**universal_trainer_params, tau=1.0)
 elif args.loss_fn == "pwr_mining":
     trainer = PWRMiningTrainer(**universal_trainer_params, mining_mode="topk")
 elif args.loss_fn == "pairlog":
@@ -240,10 +233,6 @@ elif args.loss_fn == "softmaxlist":
     trainer = SoftmaxListwiseTrainer(**universal_trainer_params)
 elif args.loss_fn == "poly1list":
     trainer = Poly1ListwiseTrainer(**universal_trainer_params)
-# elif args.loss_fn == 'plackett':
-#     trainer = PlackettTrainer(**universal_trainer_params)
-# elif args.loss_fn == 'approxrank':
-#     trainer = ApproxRankTrainer(**universal_trainer_params, alpha=10.0)
 else:
     msg = f"Loss function {args.loss_fn} not recognized"
     raise ValueError(msg)

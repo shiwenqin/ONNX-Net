@@ -217,38 +217,6 @@ class Poly1ListwiseTrainer(Trainer):
         return (loss, outputs) if return_outputs else loss
 
 
-# class SpearmanTrainer(Trainer):
-#     " Use Spearman correlation as loss for regression tasks. "
-#     def __init__(self, *args: Any, tau=1.0, **kwargs: Any) -> None:
-#         super().__init__(*args, **kwargs)
-#         self.tau = tau
-
-#    @override
-#    def compute_loss(
-#        self, model: nn.Module,
-#        inputs: dict[str, Tensor | Any],
-#        return_outputs: bool = False,
-#        num_items_in_batch: Tensor | None = None
-#    ) -> tuple[Tensor, Tensor] | Tensor:
-#         labels = inputs.pop("labels")
-#         outputs = model(**inputs)
-
-#         logits = outputs.logits.squeeze(-1)
-
-#         y_pred = logits.view(-1).to(torch.float32)
-#         y_true = labels.to(logits.device).view(-1).to(torch.float32)
-
-#         r_pred = torchsort.soft_rank(y_pred[None, :].contiguous(), regularization_strength=self.tau)
-#         r_true = torchsort.soft_rank(y_true[None, :].contiguous(), regularization_strength=self.tau)
-
-#         r_pred = (r_pred - r_pred.mean()) / (r_pred.std() + 1e-8)
-#         r_true = (r_true - r_true.mean()) / (r_true.std() + 1e-8)
-
-#         loss = 1 - (r_pred * r_true).mean()
-
-#         return (loss, outputs) if return_outputs else loss
-
-
 class PWRMiningTrainer(Trainer):
     """Use Pairwise Ranking loss with hard mining for regression tasks."""
 
@@ -334,65 +302,3 @@ class PWRMiningTrainer(Trainer):
         loss = (loss * w).sum() / (w.sum() + self.eps)
 
         return (loss, outputs) if return_outputs else loss
-
-
-# class PlackettTrainer(Trainer):
-#     " Use Plackett-Luce loss for regression tasks. "
-#     def __init__(self, *args: Any, **kwargs: Any) -> None:
-#         super().__init__(*args, **kwargs)
-
-#    @override
-#    def compute_loss(
-#        self, model: nn.Module,
-#        inputs: dict[str, Tensor | Any],
-#        return_outputs: bool = False,
-#        num_items_in_batch: Tensor | None = None
-#    ) -> tuple[Tensor, Tensor] | Tensor:
-#         labels = inputs.pop("labels")
-#         outputs = model(**inputs)
-
-#         logits = outputs.logits.squeeze(-1)
-
-#         y_pred = logits.view(-1)
-#         y_true = labels.to(logits.device).view(-1)
-
-#         sorted_pred = torch.argsort(y_pred, descending=True)
-#         sorted_true = y_true[sorted_pred]
-
-#         loss = 0.0
-#         for i in range(len(y_true)):
-#             denominator = torch.logsumexp(sorted_true[i:], dim=0)
-#             loss += (denominator - sorted_true[i])
-#         loss = loss / len(y_true)
-
-#         return (loss, outputs) if return_outputs else loss
-
-# class ApproxRankTrainer(Trainer):
-#     " Use Approximate Ranking loss for regression tasks. "
-#     def __init__(self, *args: Any, alpha=10.0, **kwargs: Any) -> None:
-#         super().__init__(*args, **kwargs)
-#         self.alpha = alpha
-
-#    @override
-#    def compute_loss(
-#        self, model: nn.Module,
-#        inputs: dict[str, Tensor | Any],
-#        return_outputs: bool = False,
-#        num_items_in_batch: int | None = None
-#    ) -> tuple[Tensor, Tensor] | Tensor:
-#         labels = inputs.pop("labels")
-#         outputs = model(**inputs)
-
-#         logits = outputs.logits.squeeze(-1)
-
-#         y_pred = logits.unsqueeze(0)
-#         y_true = labels.to(logits.device).unsqueeze(0)
-
-#         pairwise_diff = y_pred.T - y_pred
-#         pairwise_labels = (y_true.T - y_true)
-
-#         smooth_rank = torch.sigmoid(self.alpha * pairwise_diff)
-
-#         loss = nn.functional.binary_cross_entropy(smooth_rank, pairwise_labels)
-
-#         return (loss, outputs) if return_outputs else loss
