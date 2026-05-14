@@ -15,21 +15,32 @@
             "args": [],
             "env": {},
         },
-        /*
-            "name": "Python Debugger: Main",
+        {
+            "name": "Python Debugger: Search",
             "type": "debugpy",
             "python": "${command:python.interpreterPath}",
             "request": "launch",
-            "program": "${workspaceFolder}/src/__main__.py",
+            "program": "${workspaceFolder}/src/onnxnet/search.py",
             "console": "integratedTerminal",
             "pythonArgs": [
                 "-Wd"
             ],
             "justMyCode": false,
-            "args": [],
+            "args": [
+                "--model_name", "answerdotai/ModernBERT-large",
+                "--data_path", "data/chain_slim_v1/nasbench101_train.csv",
+                "--output_path", "out",
+                "--batch_size", "16",
+                "--epochs", "5",
+                "--seed", "42",
+                "--lr", "5e-5",
+                "--loss_fn", "pwr",
+                "--weight_decay", "0.1",
+                "--gradient_checkpointing", "True"
+            ],
             "env": {},
             "envFile": "${workspaceFolder}/.env"
-        },*/
+        },
     ],
     "compounds": []
 }
